@@ -70,12 +70,9 @@ jobs:
       - name: Move and rename artifacts
         run: |
           for lambda_dir in lambdas/*; do
-            if [ -d "$lambda_dir/pkg" ]; then
-              cd "$lambda_dir/pkg"
-              for file in *.zip; do
-                mv "$file" "${lambda_dir}/pkg/${file}"
-              done
-              cd ../../
+            if [ -d "$lambda_dir/build" ]; then
+              mv "$lambda_dir/build"/* "$lambda_dir/pkg/"
+              rm -rf "$lambda_dir/build"
             fi
           done
 
@@ -84,7 +81,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
           git add lambdas/*/pkg/*.zip
-          git commit -m "Add all Lambda deployment packages from previous pkgs"
+          git commit -m "Add all Lambda deployment packages from previous builds"
 
       - name: Push deployment packages
         run: |
