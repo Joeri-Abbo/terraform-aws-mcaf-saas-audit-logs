@@ -82,13 +82,25 @@ jobs:
             fi
           done
 
-      - name: Commit deployment packages
+      - name: List contents of pkg directories (for debugging)
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "GitHub Actions"
-          git add lambdas/*/pkg/*.zip
-          git commit -m "Add all Lambda deployment packages from previous builds"
+          for lambda_dir in lambdas/*; do
+            echo "Contents of $lambda_dir/pkg:"
+            ls -l "$lambda_dir/pkg"
+          done
+
+      - name: Conditionally add and commit deployment packages
+        run: |
+          if git status --porcelain | grep -q 'lambdas/*/pkg/*.zip'; then
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git config --global user.name "GitHub Actions"
+            git add lambdas/*/pkg/*.zip
+            git commit -m "Add all Lambda deployment packages from previous builds"
+          else
+            echo "No changes to commit."
+          fi
 
       - name: Push deployment packages
+        if: success()
         run: |
           git push
