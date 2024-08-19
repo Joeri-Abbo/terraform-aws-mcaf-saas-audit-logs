@@ -67,6 +67,12 @@ jobs:
         with:
           path: lambdas/
 
+      - name: Create pkg directories
+        run: |
+          for lambda_dir in lambdas/*; do
+            mkdir -p "$lambda_dir/pkg"
+          done
+
       - name: Move and rename artifacts
         run: |
           for lambda_dir in lambdas/*; do
