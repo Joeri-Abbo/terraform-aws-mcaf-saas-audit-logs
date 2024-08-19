@@ -45,13 +45,13 @@ jobs:
           zip -r ../../../../../build/lambda_function_${{ matrix.python-version }}.zip .
           cd ../../../../
           zip -g ../build/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
-          mv ../build/lambda_function_${{ matrix.python-version }}.zip ../../${{ matrix.lambda-name }}-${{ matrix.python-version }}/lambda_function_${{ matrix.python-version }}.zip
+          mv ../build/lambda_function_${{ matrix.python-version }}.zip ../pkg/lambda_function_${{ matrix.python-version }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.lambda-name }}-${{ matrix.python-version }}
-          path: lambdas/${{ matrix.lambda-name }}-${{ matrix.python-version }}/lambda_function_${{ matrix.python-version }}.zip
+          path: lambdas/${{ matrix.lambda-name }}/pkg/lambda_function_${{ matrix.python-version }}.zip
 
   push:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
 
       - name: Remove old pkg artifacts
         run: |
-          rm -rf lambdas/*-3.*/lambda_function_*.zip
+          rm -rf lambdas/*/pkg/*
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
