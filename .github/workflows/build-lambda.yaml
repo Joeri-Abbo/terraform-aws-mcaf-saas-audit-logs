@@ -62,11 +62,15 @@ jobs:
         run: |
           rm -rf lambdas/*/pkg/*
 
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: lambdas/
       - name: Download artifacts for each lambda
         run: |
           for lambda in gitlab okta terraform-cloud; do
             mkdir -p lambdas/$lambda/pkg
-            mv lambdas/$lambda-${{ matrix.python-version }}/lambda_function_${{ matrix.python-version }}.zip lambdas/$lambda/pkg/lambda_function_${{ matrix.python-version }}.zip
+            mv lambdas/$lambda-3.12/lambda_function_3.12.zip lambdas/$lambda/pkg/lambda_function_3.12.zip
           done
 
       - name: Conditionally add and commit deployment packages
