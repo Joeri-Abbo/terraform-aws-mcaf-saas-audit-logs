@@ -39,16 +39,19 @@ jobs:
         run: |
           cd lambdas/${{ matrix.lambda-name }}/src
           mkdir -p ../build
+          rm -rf ../pkg
+          mkdir -p ../pkg
           cd venv/lib/python${{ matrix.python-version }}/site-packages
           zip -r ../../../../../build/lambda_function_${{ matrix.python-version }}.zip .
           cd ../../../../
           zip -g ../build/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
+          mv ../build/lambda_function_${{ matrix.python-version }}.zip ../pkg/lambda_function_${{ matrix.python-version }}.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.lambda-name }}-${{ matrix.python-version }}
-          path: lambdas/${{ matrix.lambda-name }}/build/lambda_function_${{ matrix.python-version }}.zip
+          path: lambdas/${{ matrix.lambda-name }}/pkg/lambda_function_${{ matrix.python-version }}.zip
 
   push:
     runs-on: ubuntu-latest
@@ -66,28 +69,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: lambdas/
-
-      - name: Create pkg directories
-        run: |
-          for lambda_dir in lambdas/*; do
-            mkdir -p "$lambda_dir/pkg"
-          done
-
-      - name: Move and rename artifacts
-        run: |
-          for lambda_dir in lambdas/*; do
-            if [ -d "$lambda_dir/build" ]; then
-              mv "$lambda_dir/build"/* "$lambda_dir/pkg/"
-              rm -rf "$lambda_dir/build"
-            fi
-          done
-
-      - name: List contents of pkg directories (for debugging)
-        run: |
-          for lambda_dir in lambdas/*; do
-            echo "Contents of $lambda_dir/pkg:"
-            ls -l "$lambda_dir/pkg"
-          done
 
       - name: Conditionally add and commit deployment packages
         run: |
