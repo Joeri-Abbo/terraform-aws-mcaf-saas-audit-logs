@@ -38,17 +38,17 @@ jobs:
       - name: Create Lambda deployment package
         run: |
           cd lambdas/${{ matrix.lambda-name }}/src
-          mkdir -p ../pkg
+          mkdir -p ../build
           cd venv/lib/python${{ matrix.python-version }}/site-packages
-          zip -r ../../../../../../pkg/lambda_function_${{ matrix.python-version }}.zip .
+          zip -r ../../../../../build/lambda_function_${{ matrix.python-version }}.zip .
           cd ../../../../
-          zip -g ../../pkg/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
+          zip -g ../build/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.lambda-name }}-${{ matrix.python-version }}
-          path: lambdas/${{ matrix.lambda-name }}/pkg/lambda_function_${{ matrix.python-version }}.zip
+          path: lambdas/${{ matrix.lambda-name }}/build/lambda_function_${{ matrix.python-version }}.zip
 
   push:
     runs-on: ubuntu-latest
