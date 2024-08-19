@@ -38,14 +38,11 @@ jobs:
       - name: Create Lambda deployment package
         run: |
           cd lambdas/${{ matrix.lambda-name }}/src
-          mkdir -p ../build
-          rm -rf ../pkg
           mkdir -p ../pkg
           cd venv/lib/python${{ matrix.python-version }}/site-packages
-          zip -r ../../../../../build/lambda_function_${{ matrix.python-version }}.zip .
+          zip -r ../../../../../pkg/lambda_function_${{ matrix.python-version }}.zip .
           cd ../../../../
-          zip -g ../build/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
-          mv ../build/lambda_function_${{ matrix.python-version }}.zip ../pkg/lambda_function_${{ matrix.python-version }}.zip
+          zip -g ../pkg/lambda_function_${{ matrix.python-version }}.zip -r * --exclude venv/\*
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -65,16 +62,18 @@ jobs:
         run: |
           rm -rf lambdas/*/pkg/*
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: lambdas/
+      - name: Download artifacts for each lambda
+        run: |
+          for lambda in gitlab okta terraform-cloud; do
+            mkdir -p lambdas/$lambda/pkg
+            mv lambdas/$lambda-${{ matrix.python-version }}/lambda_function_${{ matrix.python-version }}.zip lambdas/$lambda/pkg/lambda_function_${{ matrix.python-version }}.zip
+          done
 
       - name: Conditionally add and commit deployment packages
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
-          git add .
+          git add lambdas/*/pkg/*.zip
           git commit -m "Add all Lambda deployment packages from previous builds" || echo "No changes to commit"
 
       - name: Push deployment packages
